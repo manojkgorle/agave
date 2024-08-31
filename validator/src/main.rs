@@ -1458,6 +1458,7 @@ pub fn main() {
         },
         voting_disabled: matches.is_present("no_voting") || restricted_repair_only_mode,
         wait_for_supermajority: value_t!(matches, "wait_for_supermajority", Slot).ok(),
+        // @todo know validators?
         known_validators,
         repair_validators,
         repair_whitelist,

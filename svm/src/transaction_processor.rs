@@ -961,14 +961,14 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         name: &str,
         builtin: ProgramCacheEntry,
     ) {
-        debug!("Adding program {} under {:?}", name, program_id);
+        log::info!("Adding program {} under {:?}", name, program_id);
         callbacks.add_builtin_account(name, &program_id);
         self.builtin_program_ids.write().unwrap().insert(program_id);
         self.program_cache
             .write()
             .unwrap()
             .assign_program(program_id, Arc::new(builtin));
-        debug!("Added program {} under {:?}", name, program_id);
+        log::info!("Added program {} under {:?}", name, program_id);
     }
 }
 

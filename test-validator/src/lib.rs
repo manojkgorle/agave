@@ -646,6 +646,7 @@ impl TestValidatorGenesis {
     ///
     /// This function panics on initialization failure.
     pub fn start(&self) -> (TestValidator, Keypair) {
+        // @todo here it is the, test validator client is starting here.
         self.start_with_socket_addr_space(SocketAddrSpace::new(/*allow_private_addr=*/ true))
     }
 
@@ -687,6 +688,7 @@ impl TestValidatorGenesis {
     }
 }
 
+// @todo not sure, where the db is attatched, but we need to figure out. where it is and plugin the db.
 pub struct TestValidator {
     ledger_path: PathBuf,
     preserve_ledger: bool,
@@ -924,6 +926,7 @@ impl TestValidator {
         Ok(ledger_path)
     }
 
+    // @todo here is the code for starting the test validator.
     /// Starts a TestValidator at the provided ledger directory
     fn start(
         mint_address: Pubkey,
@@ -1033,7 +1036,7 @@ impl TestValidator {
         if let Some(ref tower_storage) = config.tower_storage {
             validator_config.tower_storage = tower_storage.clone();
         }
-
+        // @todo creates a validator.
         let validator = Some(Validator::new(
             node,
             Arc::new(validator_identity),

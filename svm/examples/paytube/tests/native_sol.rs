@@ -21,45 +21,52 @@ fn test_native_sol() {
         (bob_pubkey, system_account(10_000_000)),
         (will_pubkey, system_account(10_000_000)),
     ];
-
+    println!("alice public key: {:?}", alice_pubkey);
+    println!("bob public key: {:?}", bob_pubkey);
+    println!("will public key: {:?}", will_pubkey);
+    // @todo we need test validator only for dealing with rpc requestes.
     let context = TestValidatorContext::start_with_accounts(accounts);
     let test_validator = &context.test_validator;
+    // test_validator
     let payer = context.payer.insecure_clone();
 
     let rpc_client = test_validator.get_rpc_client();
 
     let paytube_channel = PayTubeChannel::new(vec![payer, alice, bob, will], rpc_client);
 
-    paytube_channel.process_paytube_transfers(&[
-        // Alice -> Bob 2_000_000
-        PayTubeTransaction {
-            from: alice_pubkey,
-            to: bob_pubkey,
-            amount: 2_000_000,
-            mint: None,
-        },
-        // Bob -> Will 5_000_000
-        PayTubeTransaction {
-            from: bob_pubkey,
-            to: will_pubkey,
-            amount: 5_000_000,
-            mint: None,
-        },
-        // Alice -> Bob 2_000_000
-        PayTubeTransaction {
-            from: alice_pubkey,
-            to: bob_pubkey,
-            amount: 2_000_000,
-            mint: None,
-        },
-        // Will -> Alice 1_000_000
-        PayTubeTransaction {
-            from: will_pubkey,
-            to: alice_pubkey,
-            amount: 1_000_000,
-            mint: None,
-        },
-    ]);
+    paytube_channel.process_paytube_transfers(
+        &[
+            // Alice -> Bob 2_000_000
+            PayTubeTransaction {
+                from: alice_pubkey,
+                to: bob_pubkey,
+                amount: 2_000_000,
+                mint: None,
+            },
+            // Bob -> Will 5_000_000
+            PayTubeTransaction {
+                from: bob_pubkey,
+                to: will_pubkey,
+                amount: 5_000_000,
+                mint: None,
+            },
+            // Alice -> Bob 2_000_000
+            PayTubeTransaction {
+                from: alice_pubkey,
+                to: bob_pubkey,
+                amount: 2_000_000,
+                mint: None,
+            },
+            // Will -> Alice 1_000_000
+            PayTubeTransaction {
+                from: will_pubkey,
+                to: alice_pubkey,
+                amount: 1_000_000,
+                mint: None,
+            },
+        ],
+        will_pubkey,
+    );
 
     // Ledger:
     // Alice:   10_000_000 - 2_000_000 - 2_000_000 + 1_000_000  = 7_000_000

@@ -12,6 +12,7 @@
 
 use {
     crate::transaction::PayTubeTransaction,
+    pickledb::PickleDb,
     solana_client::{rpc_client::RpcClient, rpc_config::RpcSendTransactionConfig},
     solana_sdk::{
         commitment_config::CommitmentConfig, instruction::Instruction as SolanaInstruction,
@@ -41,7 +42,7 @@ use {
 /// more. An on-chain program on the base chain could even facilitate
 /// multi-party transfers, further reducing the number of required
 /// settlement transactions.
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Debug)]
 struct LedgerKey {
     mint: Option<Pubkey>,
     keys: [Pubkey; 2],
@@ -72,6 +73,7 @@ impl Ledger {
                     let mint = transaction.mint;
                     let mut keys = [transaction.from, transaction.to];
                     keys.sort();
+                    // @todo write to db again?
                     let amount = if keys.iter().position(|k| k.eq(&transaction.from)).unwrap() == 0
                     {
                         transaction.amount as i128
@@ -86,6 +88,7 @@ impl Ledger {
                         .or_insert(amount);
                 }
             });
+        // println!("ledger: {:?}", ledger);
         Self { ledger }
     }
 
@@ -176,3 +179,43 @@ impl<'a> PayTubeSettler<'a> {
         });
     }
 }
+
+// pub struct PayTubeSettlerWithDB {}
+
+// impl PayTubeSettlerWithDB {
+//     pub fn new() -> Self {
+//         Self {}
+//     }
+
+//     pub fn settle(
+//         paytube_transactions: &[PayTubeTransaction],
+//         svm_output: LoadAndExecuteSanitizedTransactionsOutput,
+//         db: &mut PickleDb,
+//     ) {
+//         // @todo read solana runtime and solana sdk modules.
+//         // let processing_results = svm_output.processing_results;
+//         // for processing_result in processing_results {
+//         //     if let Some(executed_tx) = processing_result.processed_transaction() {
+//         //         let programs_modified_by_tx = &executed_tx.programs_modified_by_tx;
+//         //     };
+//         // }
+//         // @todo use executed_transactions.programme_modified_by_tx method, to make generic state changes.
+//         paytube_transactions
+//             .iter()
+//             .zip(processing_results)
+//             .for_each(|(transaction, result)| {
+//                 if result.was_processed_with_successful_result() {
+//                     // @todo write to db again?
+//                     let from = transaction.from.to_string();
+//                     let to = transaction.to.to_string();
+//                     let amount = transaction.amount;
+//                     let balance_from = db.get::<u64>(&from).unwrap();
+//                     let balance_to = db.get::<u64>(&to).unwrap();
+//                     db.rem(&from).unwrap();
+//                     db.rem(&to).unwrap();
+//                     db.set(&from, &(balance_from - amount)).unwrap();
+//                     db.set(&to, &(balance_to + amount)).unwrap();
+//                 }
+//             })
+//     }
+// }

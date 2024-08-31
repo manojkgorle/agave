@@ -1,19 +1,27 @@
 //! A helper to initialize Solana SVM API's `TransactionBatchProcessor`.
 
 use {
-    solana_bpf_loader_program::syscalls::create_program_runtime_environment_v1,
+    solana_bpf_loader_program::syscalls::{create_program_runtime_environment_v1, SyscallLog},
     solana_compute_budget::compute_budget::ComputeBudget,
-    solana_program_runtime::loaded_programs::{
-        BlockRelation, ForkGraph, LoadProgramMetrics, ProgramCacheEntry,
+    solana_program_runtime::{
+        invoke_context::InvokeContext,
+        loaded_programs::{BlockRelation, ForkGraph, LoadProgramMetrics, ProgramCacheEntry},
+        solana_rbpf::program::BuiltinProgram,
     },
-    solana_sdk::{account::ReadableAccount, clock::Slot, feature_set::FeatureSet, transaction},
+    solana_sdk::{
+        account::ReadableAccount, bpf_loader_upgradeable, clock::Slot, feature_set::FeatureSet,
+        transaction,
+    },
     solana_svm::{
         account_loader::CheckedTransactionDetails,
         transaction_processing_callback::TransactionProcessingCallback,
         transaction_processor::TransactionBatchProcessor,
     },
     solana_system_program::system_processor,
-    std::sync::{Arc, RwLock},
+    std::{
+        collections::HashSet,
+        sync::{Arc, RwLock},
+    },
 };
 
 /// In order to use the `TransactionBatchProcessor`, another trait - Solana
@@ -40,8 +48,11 @@ pub(crate) fn create_transaction_batch_processor<CB: TransactionProcessingCallba
     compute_budget: &ComputeBudget,
     fork_graph: Arc<RwLock<PayTubeForkGraph>>,
 ) -> TransactionBatchProcessor<PayTubeForkGraph> {
-    let processor = TransactionBatchProcessor::<PayTubeForkGraph>::default();
-
+    // @todo here we are using custom transaction batch processor, the example in the integration tests uses the TransactionBatchProcessor from the solana_svm crate. is it so?
+    // I don't think so, that it is the issue with cache or TransactionBatchProcessor, But rather this is the issue with effective_slot, deployment_slot, root_slot(current slot) of the transaction context.
+    // @todo transaction batch processor, is important for `load_and_execute_sanitized_transactions`.
+    //
+    let processor = TransactionBatchProcessor::<PayTubeForkGraph>::new(10, 2, HashSet::new());
     {
         let mut cache = processor.program_cache.write().unwrap();
 
@@ -56,26 +67,28 @@ pub(crate) fn create_transaction_batch_processor<CB: TransactionProcessingCallba
                 .unwrap(),
         );
 
-        // Add the SPL Token program to the cache.
-        if let Some(program_account) = callbacks.get_account_shared_data(&spl_token::id()) {
-            let elf_bytes = program_account.data();
-            let program_runtime_environment = cache.environments.program_runtime_v1.clone();
-            cache.assign_program(
-                spl_token::id(),
-                Arc::new(
-                    ProgramCacheEntry::new(
-                        &solana_sdk::bpf_loader::id(),
-                        program_runtime_environment,
-                        0,
-                        0,
-                        elf_bytes,
-                        elf_bytes.len(),
-                        &mut LoadProgramMetrics::default(),
-                    )
-                    .unwrap(),
-                ),
-            );
-        }
+        // @todo all the programs that are going to be executed should be cached.
+        // // Add the SPL Token program to the cache.
+        // if let Some(program_account) = callbacks.get_account_shared_data(&spl_token::id()) {
+        //     let elf_bytes = program_account.data();
+        //     // println!("elf_bytes: {:?}", elf_bytes);
+        //     let program_runtime_environment = cache.environments.program_runtime_v1.clone();
+        //     cache.assign_program(
+        //         spl_token::id(),
+        //         Arc::new(
+        //             ProgramCacheEntry::new(
+        //                 &solana_sdk::bpf_loader::id(),
+        //                 program_runtime_environment,
+        //                 0,
+        //                 0,
+        //                 elf_bytes,
+        //                 elf_bytes.len(),
+        //                 &mut LoadProgramMetrics::default(),
+        //             )
+        //             .unwrap(),
+        //         ),
+        //     );
+        // }
     }
 
     // Add the system program builtin.
@@ -102,6 +115,16 @@ pub(crate) fn create_transaction_batch_processor<CB: TransactionProcessingCallba
         ),
     );
 
+    processor.add_builtin(
+        callbacks,
+        bpf_loader_upgradeable::id(),
+        "solana_bpf_loader_upgradeable_program",
+        ProgramCacheEntry::new_builtin(
+            0,
+            b"solana_bpf_loader_upgradeable_program".len(),
+            solana_bpf_loader_program::Entrypoint::vm,
+        ),
+    );
     processor
 }
 
@@ -120,3 +143,11 @@ pub(crate) fn get_transaction_check_results(
         len
     ]
 }
+
+// @todo what else do we need to figrue?
+// database key value marshalling and unmarshalling.
+// system instruction marshalling and unmarshalling over rpc.
+// new methods for deploying programs.
+// post execution state updation methods. --> @todo look into this now. --> svm crate has collect_accounts_to_store method. this method gives the accounts changed for the given batch of transactions.
+// charge fees for execution.
+// signature verification is disabled. not sure how to enable it. --> if we want, we can verify transactions, in the usual signature verification way before execution and adding into mempool.

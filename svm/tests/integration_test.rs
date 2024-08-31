@@ -80,6 +80,7 @@ fn prepare_transactions(
     transaction_builder.create_instruction(
         transfer_program_account,
         vec![
+            // @todo accounts that are touched by the program invocation.
             AccountMeta {
                 pubkey: sender,
                 is_signer: true,
@@ -234,6 +235,7 @@ fn prepare_transactions(
 
 #[test]
 fn svm_integration() {
+    // @todo mock_back callback.
     let mock_bank = MockBankCallback::default();
     let (transactions, check_results) = prepare_transactions(&mock_bank);
     let batch_processor = TransactionBatchProcessor::<MockForkGraph>::new(
@@ -262,7 +264,10 @@ fn svm_integration() {
         },
         ..Default::default()
     };
-
+    println!(
+        "processor cache: {:?}\n\n",
+        batch_processor.program_cache.read().unwrap()
+    );
     let result = batch_processor.load_and_execute_sanitized_transactions(
         &mock_bank,
         &transactions,
@@ -270,7 +275,10 @@ fn svm_integration() {
         &TransactionProcessingEnvironment::default(),
         &processing_config,
     );
-
+    println!(
+        "processor cache post execution: {:?}",
+        batch_processor.program_cache.read().unwrap()
+    );
     assert_eq!(result.processing_results.len(), 5);
 
     let executed_tx_0 = result.processing_results[0]

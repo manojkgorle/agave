@@ -2386,6 +2386,7 @@ pub struct PubkeyHashAccount {
     pub account: AccountSharedData,
 }
 
+//@todo create a AccountsDB.
 impl AccountsDb {
     pub const DEFAULT_ACCOUNTS_HASH_CACHE_DIR: &'static str = "accounts_hash_cache";
 

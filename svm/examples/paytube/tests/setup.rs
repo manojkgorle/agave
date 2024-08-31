@@ -1,4 +1,4 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use {
     solana_sdk::{
@@ -57,7 +57,7 @@ pub fn mint_account() -> AccountSharedData {
         data
     };
     let mut account = AccountSharedData::new(100_000_000, data.len(), &spl_token::id());
-    account.set_data_from_slice(&data);
+    account.set_data_from_slice(&data); // @todo set the data to the account.
     account
 }
 

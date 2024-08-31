@@ -127,7 +127,7 @@ pub fn deploy_program(name: String, deployment_slot: Slot, mock_bank: &MockBankC
     let mut account_data = AccountSharedData::default();
     account_data.set_data(bincode::serialize(&state).unwrap());
     account_data.set_lamports(25);
-    account_data.set_owner(bpf_loader_upgradeable::id());
+    account_data.set_owner(bpf_loader_upgradeable::id()); // @todo bpf_loader_upgradeable is interesting. bpf_loader_upgradeable has authority to deploy, upgrade and execute programs.
     mock_bank
         .account_shared_data
         .write()

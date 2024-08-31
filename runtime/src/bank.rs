@@ -4558,7 +4558,7 @@ impl Bank {
     }
 
     /// Process a batch of transactions.
-    #[must_use]
+    #[must_use] // @todo this method is used to execute transaction and commit the transaction to state.
     pub fn load_execute_and_commit_transactions(
         &self,
         batch: &TransactionBatch,
@@ -4670,7 +4670,7 @@ impl Bank {
         Ok(self.process_transaction_batch(&batch))
     }
 
-    #[must_use]
+    #[must_use] // @todo , process_transaction batch executes all transactions batch.
     fn process_transaction_batch(&self, batch: &TransactionBatch) -> Vec<Result<()>> {
         self.load_execute_and_commit_transactions(
             batch,

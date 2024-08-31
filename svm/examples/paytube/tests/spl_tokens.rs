@@ -53,37 +53,40 @@ fn test_spl_tokens() {
     let rpc_client = test_validator.get_rpc_client();
 
     let paytube_channel = PayTubeChannel::new(vec![payer, alice, bob, will], rpc_client);
-
-    paytube_channel.process_paytube_transfers(&[
-        // Alice -> Bob 2
-        PayTubeTransaction {
-            from: alice_pubkey,
-            to: bob_pubkey,
-            amount: 2,
-            mint: Some(mint),
-        },
-        // Bob -> Will 5
-        PayTubeTransaction {
-            from: bob_pubkey,
-            to: will_pubkey,
-            amount: 5,
-            mint: Some(mint),
-        },
-        // Alice -> Bob 2
-        PayTubeTransaction {
-            from: alice_pubkey,
-            to: bob_pubkey,
-            amount: 2,
-            mint: Some(mint),
-        },
-        // Will -> Alice 1
-        PayTubeTransaction {
-            from: will_pubkey,
-            to: alice_pubkey,
-            amount: 1,
-            mint: Some(mint),
-        },
-    ]);
+    // @todo deploy a contract.
+    paytube_channel.process_paytube_transfers(
+        &[
+            // Alice -> Bob 2
+            PayTubeTransaction {
+                from: alice_pubkey,
+                to: bob_pubkey,
+                amount: 2,
+                mint: Some(mint),
+            },
+            // Bob -> Will 5
+            PayTubeTransaction {
+                from: bob_pubkey,
+                to: will_pubkey,
+                amount: 5,
+                mint: Some(mint),
+            },
+            // Alice -> Bob 2
+            PayTubeTransaction {
+                from: alice_pubkey,
+                to: bob_pubkey,
+                amount: 2,
+                mint: Some(mint),
+            },
+            // Will -> Alice 1
+            PayTubeTransaction {
+                from: will_pubkey,
+                to: alice_pubkey,
+                amount: 1,
+                mint: Some(mint),
+            },
+        ],
+        will_pubkey,
+    );
 
     // Ledger:
     // Alice:   10 - 2 - 2 + 1  = 7

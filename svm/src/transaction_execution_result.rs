@@ -41,6 +41,7 @@ pub enum TransactionExecutionResult {
 pub struct ExecutedTransaction {
     pub loaded_transaction: LoadedTransaction,
     pub execution_details: TransactionExecutionDetails,
+    //@todo this is the list of programs modified by the transaction.
     pub programs_modified_by_tx: HashMap<Pubkey, Arc<ProgramCacheEntry>>,
 }
 

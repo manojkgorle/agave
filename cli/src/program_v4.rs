@@ -545,6 +545,7 @@ pub fn process_program_v4_subcommand(
 //   - buffer_signer argument must contain the temporary buffer account information
 //     (program_address must contain program ID and must NOT be same as buffer_signer.pubkey())
 pub fn process_deploy_program(
+    //@todo deploy a program/smart contract.
     rpc_client: Arc<RpcClient>,
     config: &ProgramV4CommandConfig,
     program_data: &[u8],

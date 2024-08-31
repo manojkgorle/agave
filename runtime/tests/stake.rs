@@ -148,7 +148,7 @@ fn test_stake_create_and_split_single_signature() {
     );
 
     let staker_pubkey = staker_keypair.pubkey();
-
+    // @todo create a bank for testing.
     let (bank, _bank_forks) = Bank::new_with_bank_forks_for_tests(&genesis_config);
     let bank_client = BankClient::new_shared(bank.clone());
 
